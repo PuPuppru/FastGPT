@@ -126,6 +126,7 @@ async function initRootUser() {
   }
 }
 
+export * from './models/authCode';
 export * from './models/chat';
 export * from './models/chatItem';
 export * from './models/app';

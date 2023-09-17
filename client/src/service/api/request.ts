@@ -1,6 +1,4 @@
 import axios, { Method, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { clearToken, getToken } from '@/utils/user';
-import { TOKEN_ERROR_CODE } from '@/service/errorCode';
 
 interface ConfigType {
   headers?: { [key: string]: string };
@@ -37,7 +35,7 @@ function checkRes(data: ResponseDataType) {
   if (data === undefined) {
     console.log('error->', data, 'data is empty');
     return Promise.reject('服务器异常');
-  } else if (data.code < 200 || data.code >= 400) {
+  } else if (data?.code && (data.code < 200 || data.code >= 400)) {
     return Promise.reject(data);
   }
   return data.data;
@@ -53,14 +51,7 @@ function responseError(err: any) {
   if (typeof err === 'string') {
     return Promise.reject({ message: err });
   }
-  // 有报错响应
-  if (err?.code in TOKEN_ERROR_CODE) {
-    clearToken();
-    window.location.replace(
-      `/login?lastRoute=${encodeURIComponent(location.pathname + location.search)}`
-    );
-    return Promise.reject({ message: 'token过期，重新登录' });
-  }
+
   if (err?.response?.data) {
     return Promise.reject(err?.response?.data);
   }
@@ -69,6 +60,7 @@ function responseError(err: any) {
 
 /* 创建请求实例 */
 const instance = axios.create({
+  baseURL: global.systemEnv.pluginBaseUrl,
   timeout: 60000, // 超时时间
   headers: {
     'content-type': 'application/json'
@@ -80,7 +72,11 @@ instance.interceptors.request.use(requestStart, (err) => Promise.reject(err));
 /* 响应拦截 */
 instance.interceptors.response.use(responseSuccess, (err) => Promise.reject(err));
 
-function request(url: string, data: any, config: ConfigType, method: Method): any {
+export function request(url: string, data: any, config: ConfigType, method: Method): any {
+  if (!global.systemEnv.pluginBaseUrl) {
+    return Promise.reject('请安装商业版插件~');
+  }
+
   /* 去空 */
   for (const key in data) {
     if (data[key] === null || data[key] === undefined) {
@@ -90,7 +86,6 @@ function request(url: string, data: any, config: ConfigType, method: Method): an
 
   return instance
     .request({
-      baseURL: '/api',
       url,
       method,
       data: ['POST', 'PUT'].includes(method) ? data : null,
@@ -108,22 +103,18 @@ function request(url: string, data: any, config: ConfigType, method: Method): an
  * @param {Object} config
  * @returns
  */
-export function GET<T>(url?: string, params = {}, config: ConfigType = {}): Promise<T> {
-  if (!url) return Promise.reject('The Plugin is not installed');
+export function GET<T>(url: string, params = {}, config: ConfigType = {}): Promise<T> {
   return request(url, params, config, 'GET');
 }
 
-export function POST<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
-  if (!url) return Promise.reject('The Plugin is not installed');
+export function POST<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
   return request(url, data, config, 'POST');
 }
 
-export function PUT<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
-  if (!url) return Promise.reject('The Plugin is not installed');
+export function PUT<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
   return request(url, data, config, 'PUT');
 }
 
-export function DELETE<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
-  if (!url) return Promise.reject('The Plugin is not installed');
+export function DELETE<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
   return request(url, data, config, 'DELETE');
 }

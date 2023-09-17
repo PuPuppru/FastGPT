@@ -11,7 +11,7 @@ export const sendAuthCode = (data: {
   username: string;
   type: `${UserAuthTypeEnum}`;
   googleToken: string;
-}) => POST(`/plusApi/user/inform/sendAuthCode`, data);
+}) => POST('/user/sendAuthCode', data);
 
 export const getTokenLogin = () => GET<UserType>('/user/account/tokenLogin');
 export const oauthLogin = (params: {
@@ -32,7 +32,7 @@ export const postRegister = ({
   password: string;
   inviterId?: string;
 }) =>
-  POST<ResLogin>(`/plusApi/user/account/register/emailAndPhone`, {
+  POST<ResLogin>(`/plusApi/user/account/register`, {
     username,
     code,
     inviterId,
@@ -48,7 +48,7 @@ export const postFindPassword = ({
   code: string;
   password: string;
 }) =>
-  POST<ResLogin>(`/plusApi/user/account/password/updateByCode`, {
+  POST<ResLogin>('/user/account/updatePasswordByCode', {
     username,
     code,
     password: createHashPassword(password)
@@ -79,15 +79,9 @@ export const getPayCode = (amount: number) =>
   GET<{
     codeUrl: string;
     payId: string;
-  }>(`/plusApi/user/pay/getPayCode`, { amount });
+}>(`/user/getPayCode?amount=${amount}`);
 
-export const checkPayResult = (payId: string) =>
-  GET<number>(`/plusApi/user/pay/checkPayResult`, { payId }).then(() => {
-    try {
-      GET('/user/account/paySuccess');
-    } catch (error) {}
-    return 'success';
-  });
+export const checkPayResult = (payId: string) => GET<number>(`/user/checkPayResult?payId=${payId}`);
 
 export const getInforms = (data: RequestPaging) =>
   POST<PagingData<informSchema>>(`/user/inform/list`, data);
