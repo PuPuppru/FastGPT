@@ -1,9 +1,4 @@
-import axios, {
-  Method,
-  InternalAxiosRequestConfig,
-  AxiosResponse,
-  AxiosProgressEvent
-} from 'axios';
+import axios, { Method, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { clearToken, getToken } from '@/utils/user';
 import { TOKEN_ERROR_CODE } from '@/service/errorCode';
 
@@ -11,7 +6,6 @@ interface ConfigType {
   headers?: { [key: string]: string };
   hold?: boolean;
   timeout?: number;
-  onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
 }
 interface ResponseDataType {
   code: number;
@@ -24,7 +18,7 @@ interface ResponseDataType {
  */
 function requestStart(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
   if (config.headers) {
-    config.headers.token = getToken();
+    // config.headers.token = getToken();
   }
 
   return config;
@@ -53,8 +47,6 @@ function checkRes(data: ResponseDataType) {
  * 响应错误
  */
 function responseError(err: any) {
-  console.log('error->', '请求错误', err);
-
   if (!err) {
     return Promise.reject({ message: '未知错误' });
   }
@@ -116,18 +108,22 @@ function request(url: string, data: any, config: ConfigType, method: Method): an
  * @param {Object} config
  * @returns
  */
-export function GET<T>(url: string, params = {}, config: ConfigType = {}): Promise<T> {
+export function GET<T>(url?: string, params = {}, config: ConfigType = {}): Promise<T> {
+  if (!url) return Promise.reject('The Plugin is not installed');
   return request(url, params, config, 'GET');
 }
 
-export function POST<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
+export function POST<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
+  if (!url) return Promise.reject('The Plugin is not installed');
   return request(url, data, config, 'POST');
 }
 
-export function PUT<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
+export function PUT<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
+  if (!url) return Promise.reject('The Plugin is not installed');
   return request(url, data, config, 'PUT');
 }
 
-export function DELETE<T>(url: string, data = {}, config: ConfigType = {}): Promise<T> {
+export function DELETE<T>(url?: string, data = {}, config: ConfigType = {}): Promise<T> {
+  if (!url) return Promise.reject('The Plugin is not installed');
   return request(url, data, config, 'DELETE');
 }
